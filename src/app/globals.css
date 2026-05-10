@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+:root {
+  --gold: #C8A96E;
+  --gold-bright: #E8C97A;
+  --gold-dim: #7A6340;
+  --teal: #00C4B0;
+  --teal-bright: #00E5CF;
+  --cream: #F0E8D8;
+  --muted: #6B6355;
+  --bg: #06060A;
+  --bg2: #0A0A12;
+  --card: rgba(255, 255, 255, 0.025);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-gold: rgba(200, 169, 110, 0.2);
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--cream);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--font-body, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  mix-blend-mode: overlay;
+}
+
+/* Animated mesh background */
+.mesh-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mesh-bg::before {
+  content: '';
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(200, 169, 110, 0.06) 0%, transparent 70%);
+  animation: pulse-glow 8s ease-in-out infinite;
+}
+
+.mesh-bg::after {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 400px;
+  bottom: 0;
+  right: -100px;
+  background: radial-gradient(ellipse, rgba(0, 196, 176, 0.05) 0%, transparent 70%);
+  animation: pulse-glow 10s ease-in-out infinite reverse;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+}
+
+/* Gold shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, var(--gold-dim) 0%, var(--gold-bright) 50%, var(--gold-dim) 100%);
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Scan line animation for terminal feel */
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Data counter animation */
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Gold border glow */
+.gold-border {
+  border: 1px solid var(--border-gold);
+  box-shadow: 0 0 0 1px rgba(200, 169, 110, 0.05), inset 0 1px 0 rgba(200, 169, 110, 0.08);
+}
+
+.gold-border:hover {
+  border-color: rgba(200, 169, 110, 0.35);
+  box-shadow: 0 0 20px rgba(200, 169, 110, 0.08), inset 0 1px 0 rgba(200, 169, 110, 0.12);
+}
+
+/* Teal glow */
+.teal-glow {
+  box-shadow: 0 0 30px rgba(0, 196, 176, 0.15);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(200, 169, 110, 0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(200, 169, 110, 0.4); }
+
+/* Text selection */
+::selection { background: rgba(200, 169, 110, 0.25); color: var(--cream); }
+
+/* Font utilities */
+.font-display { font-family: var(--font-display, sans-serif); }
+.font-mono-data { font-family: var(--font-mono, monospace); }
+
+/* Diagonal grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(200, 169, 110, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200, 169, 110, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Tag badge */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: var(--font-mono, monospace);
+}
