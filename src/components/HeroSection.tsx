@@ -32,7 +32,7 @@ export default function HeroSection() {
         colorNum={5}
         pixelSize={isMobile ? 3 : 2}
         enableMouseInteraction={!isMobile}
-        mouseRadius={0.35}
+        mouseRadius={0.155}
         reducedMotion={!!reducedMotion}
       />
 

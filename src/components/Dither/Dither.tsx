@@ -68,10 +68,10 @@ const fragmentShader = `
 
     float distToMouse = distance(scaled, uMouse);
     float mouseGlow = smoothstep(uMouseRadius, 0.0, distToMouse) * uEnableMouse;
-    float waveShape = wave * uWaveAmplitude + mouseGlow * 0.55;
+    float waveShape = wave * uWaveAmplitude + mouseGlow * 0.5;
 
     vec3 base = vec3(0.03, 0.10, 0.22);
-    vec3 crest = clamp(uWaveColor + vec3(0.05 * mouseGlow), 0.0, 1.0);
+    vec3 crest = clamp(uWaveColor + vec3(0.075 * mouseGlow), 0.0, 1.0);
     vec3 color = mix(base, crest, 0.4 + waveShape * 0.5);
 
     float shimmer = sin((scaled.x + scaled.y + t * 0.2) * 48.0) * 0.015;
@@ -178,18 +178,33 @@ export default function Dither({
   mouseRadius = 0.35,
   reducedMotion = false,
 }: DitherProps) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
   const pointerRef = useRef(new THREE.Vector2(0.5, 0.5));
 
+  useEffect(() => {
+    const onPointerMove = (event: PointerEvent) => {
+      const wrap = wrapRef.current;
+      if (!wrap) {
+        return;
+      }
+      const rect = wrap.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) {
+        return;
+      }
+
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      pointerRef.current.set(Math.min(1, Math.max(0, x)), 1 - Math.min(1, Math.max(0, y)));
+    };
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+    };
+  }, []);
+
   return (
-    <div
-      className="dither-wrap"
-      onPointerMove={(event) => {
-        const rect = event.currentTarget.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width;
-        const y = (event.clientY - rect.top) / rect.height;
-        pointerRef.current.set(x, 1 - y);
-      }}
-    >
+    <div ref={wrapRef} className="dither-wrap">
       <Canvas
         dpr={reducedMotion ? 1 : [1, 1.4]}
         gl={{ antialias: false, powerPreference: "high-performance" }}
