@@ -1,0 +1,18 @@
+.dither-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #09142d;
+}
+
+.dither-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .dither-wrap {
+    filter: saturate(0.9) brightness(0.92);
+  }
+}

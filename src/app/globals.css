@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f3f6fb;
+  --surface: #f9fbff;
+  --ink: #0f1c34;
+  --muted: #5f6f89;
+  --line: #cdd8ea;
+  --line-strong: #9db4d8;
+  --blue: #1f59f0;
+  --cyan: #1ab3d6;
+  --emerald: #1ea57a;
+  --purple: #5f52ff;
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --shadow-soft: 0 14px 50px rgba(17, 43, 86, 0.12);
+  --shadow-card: 0 10px 30px rgba(21, 54, 104, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--line);
+}
+
+html,
+body {
+  min-height: 100%;
+  width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-y: none;
+}
+
+html {
+  background: #08152f;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(26, 179, 214, 0.16) 0%, rgba(26, 179, 214, 0) 35%),
+    radial-gradient(circle at 90% 6%, rgba(31, 89, 240, 0.12) 0%, rgba(31, 89, 240, 0) 40%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), "Avenir Next", "Segoe UI", sans-serif;
+  text-rendering: geometricPrecision;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--cyan) 65%, white);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--blue) 30%, white);
+}
+
+.frosted {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.75), rgba(229, 238, 255, 0.56));
+  border: 1px solid rgba(173, 194, 225, 0.55);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card);
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image:
+    linear-gradient(to right, rgba(210, 226, 246, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(210, 226, 246, 0.25) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 86%);
+}
+
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: radial-gradient(circle at 25% 20%, #fff 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.float-anim {
+  animation: cardFloat 8s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -9px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .float-anim {
+    animation: none;
+  }
 }
