@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import SloganReveal from "./SloganReveal";
 
@@ -64,19 +64,6 @@ export default function HeroSection() {
           A Solana-powered financing layer for verified Turkish exporters and global investors.
         </motion.p>
 
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-          animate={reducedMotion ? {} : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 1.3 }}
-          className="mt-8 flex"
-        >
-          <a
-            href="#marketplace-preview"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-6 py-3 text-sm font-semibold text-[#0f3f91] shadow-[0_16px_30px_rgba(21,64,143,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffffff]"
-          >
-            View Marketplace <ArrowRight size={16} />
-          </a>
-        </motion.div>
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-20 mx-auto hidden max-w-7xl px-8 lg:block">

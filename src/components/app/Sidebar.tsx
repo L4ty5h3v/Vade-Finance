@@ -6,14 +6,12 @@ import {
   Landmark,
   ListChecks,
   ShieldCheck,
-  WalletCards,
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { AppView } from "./types";
 
 const nav = [
   { label: "Marketplace" as AppView, icon: Landmark },
-  { label: "My Invoices" as AppView, icon: WalletCards },
   { label: "Portfolio" as AppView, icon: ChartNoAxesCombined },
   { label: "Verification" as AppView, icon: ShieldCheck },
 ];

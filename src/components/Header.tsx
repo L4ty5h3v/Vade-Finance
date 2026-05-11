@@ -6,10 +6,10 @@ import { useState } from "react";
 import BrandLogo from "./BrandLogo";
 
 const navItems = [
-  { label: "Product", href: "#product" },
-  { label: "How it Works", href: "#how-it-works" },
-  { label: "Marketplace", href: "#marketplace-preview" },
-  { label: "Security", href: "#security" },
+  { label: "Product", href: "/#product" },
+  { label: "How it Works", href: "/#how-it-works" },
+  { label: "Marketplace", href: "/#marketplace-preview" },
+  { label: "Security", href: "/#security" },
   { label: "Docs", href: "/docs" },
 ];
 

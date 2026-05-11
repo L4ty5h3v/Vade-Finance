@@ -18,7 +18,6 @@ import { CreateInvoiceModal, NewInvoiceInput } from "./CreateInvoiceModal";
 import { FundInvoiceModal } from "./FundInvoiceModal";
 import { InvoiceDetailDrawer } from "./InvoiceDetailDrawer";
 import { MarketplaceView } from "./MarketplaceView";
-import { MyInvoicesView } from "./MyInvoicesView";
 import { PortfolioView } from "./PortfolioView";
 import { Sidebar } from "./Sidebar";
 import { ToastMessage, ToastStack } from "./ToastStack";
@@ -28,8 +27,7 @@ import { VerificationView } from "./VerificationView";
 
 const titles: Record<AppView, string> = {
   Marketplace: "Invoice Marketplace",
-  "My Invoices": "My Invoices",
-  Portfolio: "Investor Portfolio",
+  Portfolio: "Portfolio",
   Verification: "Verification Queue",
 };
 
@@ -214,15 +212,6 @@ export function AppShell() {
     setFundTarget(undefined);
   };
 
-  const onClaim = (invoiceId: string) => {
-    if (!connected) {
-      pushToast("Connect wallet to claim repayment");
-      return;
-    }
-    pushToast("Repayment claimed");
-    setPortfolio((prev) => prev.map((item) => (item.invoiceId === invoiceId ? { ...item, status: "Active" } : item)));
-  };
-
   const openById = (id: string) => {
     const found = getInvoiceById(id);
     if (found) setDetailTarget(found);
@@ -250,12 +239,18 @@ export function AppShell() {
       );
     }
 
-    if (activeView === "My Invoices") {
-      return <MyInvoicesView invoices={myInvoices} onOpenCreate={() => setCreateOpen(true)} onOpenDetail={openById} canCreate={canCreate} />;
-    }
-
     if (activeView === "Portfolio") {
-      return <PortfolioView positions={portfolio} onClaim={onClaim} onOpenDetail={openById} />;
+      return (
+        <PortfolioView
+          role={role}
+          positions={portfolio}
+          myInvoices={myInvoices}
+          marketInvoices={invoices}
+          canCreate={canCreate}
+          onOpenCreate={() => setCreateOpen(true)}
+          onOpenDetail={openById}
+        />
+      );
     }
 
     if (activeView === "Verification") {
@@ -275,6 +270,8 @@ export function AppShell() {
     return null;
   };
 
+  const title = activeView === "Portfolio" && role === "Exporter" ? "Exporter Portfolio" : titles[activeView];
+
   return (
     <div className="min-h-screen overflow-x-clip bg-[linear-gradient(180deg,#eff5ff_0%,#e8f0fd_55%,#eff5ff_100%)] text-[#102749]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
@@ -283,7 +280,7 @@ export function AppShell() {
         </div>
 
         <main className="relative flex min-h-screen min-w-0 flex-1 flex-col">
-          <TopBar title={titles[activeView]} role={role} onRoleChange={setRole} onOpenMobileNav={() => setMobileNavOpen(true)} />
+          <TopBar title={title} role={role} onRoleChange={setRole} onOpenMobileNav={() => setMobileNavOpen(true)} />
 
           <div className="min-w-0 flex-1 p-4 md:p-6">
             <AnimatePresence mode="wait">

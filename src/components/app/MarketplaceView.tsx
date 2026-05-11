@@ -1,8 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Filter, Globe, ReceiptText } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Globe, ReceiptText } from "lucide-react";
 import { InvoiceRecord } from "@/lib/app-data";
 import { RiskBadge } from "./RiskBadge";
 import { StatusBadge } from "./StatusBadge";
@@ -18,62 +17,10 @@ type Props = {
 
 export function MarketplaceView({ invoices, onViewDetails, onFundInvoice, canFund }: Props) {
   const reducedMotion = useReducedMotion();
-  const [risk, setRisk] = useState<string>("All");
-  const [term, setTerm] = useState<string>("All");
-  const [amount, setAmount] = useState<string>("All");
-  const [status, setStatus] = useState<string>("All");
-  const [country, setCountry] = useState<string>("All");
-
-  const filtered = useMemo(() => {
-    return invoices.filter((item) => {
-      const riskOk = risk === "All" || item.risk === risk;
-      const termOk =
-        term === "All" ||
-        (term === "<=60" ? item.termDays <= 60 : term === "61-90" ? item.termDays >= 61 && item.termDays <= 90 : item.termDays > 90);
-      const amountOk =
-        amount === "All" ||
-        (amount === "<=20k" ? item.faceValue <= 20000 : amount === "20k-40k" ? item.faceValue > 20000 && item.faceValue <= 40000 : item.faceValue > 40000);
-      const statusOk = status === "All" || item.status === status;
-      const countryOk = country === "All" || item.debtorCountry === country;
-      return riskOk && termOk && amountOk && statusOk && countryOk;
-    });
-  }, [amount, country, invoices, risk, status, term]);
-
-  const filters = [
-    { label: "Risk", value: risk, set: setRisk, options: ["All", "A-", "B+", "B"] },
-    { label: "Term", value: term, set: setTerm, options: ["All", "<=60", "61-90", ">90"] },
-    { label: "Amount", value: amount, set: setAmount, options: ["All", "<=20k", "20k-40k", ">40k"] },
-    { label: "Status", value: status, set: setStatus, options: ["All", "Verified", "Listed", "Funded"] },
-    { label: "Debtor country", value: country, set: setCountry, options: ["All", "Germany"] },
-  ] as const;
+  const filtered = invoices;
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-[#c7daf4] bg-white/80 p-4 md:p-5">
-        <div className="mb-3 flex items-center gap-2 text-[#2b5285]">
-          <Filter size={15} />
-          <h2 className="text-sm font-semibold uppercase tracking-[0.14em]">Filters</h2>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          {filters.map((item) => (
-            <label key={item.label} className="space-y-1 text-xs text-[#58729a]">
-              <span>{item.label}</span>
-              <select
-                value={item.value}
-                onChange={(event) => item.set(event.target.value)}
-                className="w-full rounded-xl border border-[#c7daf4] bg-[#f9fbff] px-3 py-2 text-sm text-[#203f6a] outline-none focus:border-[#8fb5f0]"
-              >
-                {item.options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-        </div>
-      </section>
-
       <section className="hidden overflow-hidden rounded-2xl border border-[#c7daf4] bg-white/80 xl:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1050px] text-left text-sm">
