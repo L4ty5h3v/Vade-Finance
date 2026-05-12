@@ -20,13 +20,11 @@ import {
 } from "@solana/web3.js";
 import { Buffer } from "buffer";
 import { AnchorProvider, BN, Program, type Idl } from "@coral-xyz/anchor";
-import idlJson from "@/lib/vade_finance_idl.json";
 
 const VADE_PROGRAM_ID = new PublicKey(
   process.env.NEXT_PUBLIC_VADE_PROGRAM_ID || "3bto824ndCi9jr1zpYrkhUTtGz8JpCvNV2d5ExzdpUqJ",
 );
 
-const idl = idlJson as Idl;
 const MICRO = 1_000_000;
 const APP_BALANCE_SEED = "vade-app-balance-v1";
 
@@ -196,9 +194,20 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   ensureBufferGlobal();
 
   const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed", preflightCommitment: "confirmed" });
-  const program = new Program(idl, provider) as Program;
+  let programPromise: Promise<Program> | null = null;
+
+  const getProgram = async (): Promise<Program> => {
+    if (!programPromise) {
+      programPromise = import("@/lib/vade_finance_idl.json").then((mod) => {
+        const idl = mod.default as Idl;
+        return new Program(idl, provider) as Program;
+      });
+    }
+    return programPromise;
+  };
 
   const getConfig = async (): Promise<{ configPda: PublicKey; config: ConfigAccount }> => {
+    const program = await getProgram();
     const [configPda] = deriveConfigPda();
     const config = (await (program.account as Record<string, { fetch: (key: PublicKey) => Promise<unknown> }>).platformConfig.fetch(
       configPda,
@@ -288,6 +297,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const fetchInvoices = async (): Promise<OnchainInvoice[]> => {
+    const program = await getProgram();
     const rows = (await (program.account as Record<string, { all: () => Promise<unknown> }>).invoice.all()) as Array<{
       publicKey: PublicKey;
       account: InvoiceAccount;
@@ -349,6 +359,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
     const repaymentAmount = new BN(Math.round(input.faceValueUi * MICRO));
     const dueTs = new BN(Math.floor(new Date(input.dueDate).getTime() / 1000));
     const riskScore = mapTermToRiskScore(input.paymentTermDays);
+    const program = await getProgram();
 
     const sig = await program.methods
       .createInvoice(
@@ -378,16 +389,19 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const verifyInvoice = async (invoicePubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda } = await getConfig();
     return program.methods.verifyInvoice().accounts({ config: configPda, authority: wallet.publicKey, invoice: invoicePubkey }).rpc();
   };
 
   const listInvoice = async (invoicePubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda } = await getConfig();
     return program.methods.listInvoice().accounts({ config: configPda, authority: wallet.publicKey, invoice: invoicePubkey }).rpc();
   };
 
   const fundInvoice = async (invoicePubkey: PublicKey, exporterPubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda, config } = await getConfig();
 
     const investorAtaResult = await maybeCreateAtaIx(connection, config.stableMint, wallet.publicKey, wallet.publicKey);
@@ -433,6 +447,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const repayInvoice = async (invoicePubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda, config } = await getConfig();
     const [invoiceVault] = deriveInvoiceVault(invoicePubkey);
 
@@ -473,6 +488,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const claimRepayment = async (invoicePubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda, config } = await getConfig();
     const [vaultAuthority] = deriveVaultAuthority(invoicePubkey);
     const [invoiceVault] = deriveInvoiceVault(invoicePubkey);
@@ -496,6 +512,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const markDefault = async (invoicePubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda } = await getConfig();
     return program.methods.markDefault().accounts({ config: configPda, authority: wallet.publicKey, invoice: invoicePubkey }).rpc();
   };
