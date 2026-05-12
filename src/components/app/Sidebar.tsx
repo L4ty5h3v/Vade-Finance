@@ -20,6 +20,7 @@ const nav = [
 ];
 
 const settingsNav = { label: "Settings" as AppView, icon: Settings };
+const PROGRAM_ID = process.env.NEXT_PUBLIC_VADE_PROGRAM_ID || "3bto824ndCi9jr1zpYrkhUTtGz8JpCvNV2d5ExzdpUqJ";
 
 type Props = {
   active: AppView;
@@ -109,6 +110,10 @@ export function Sidebar({ active, role, onSelect, onNavigate }: Props) {
           <p className="text-sm font-semibold">Solana Devnet</p>
         </div>
         <p className="mt-2 text-xs leading-5 text-[#5d7598]">USDT settlement enabled. Settlement events are tracked in the interface.</p>
+        <div className="mt-3 rounded-xl border border-[#d5e2f4] bg-[#f7fbff] px-2.5 py-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6280a8]">Program ID</p>
+          <p className="mt-1 break-all font-mono text-[11px] leading-4 text-[#1f4a8f]">{PROGRAM_ID}</p>
+        </div>
       </div>
     </aside>
   );
