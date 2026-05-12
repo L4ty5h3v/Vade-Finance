@@ -267,6 +267,58 @@ export function AppShell() {
       pushToast("Complete wallet registration first");
       return;
     }
+
+  useEffect(() => {
+    if (!connected || !anchorWallet) return;
+
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    let inFlight = false;
+
+    const tick = async () => {
+      if (cancelled || inFlight) return;
+      inFlight = true;
+      try {
+        await syncFromChain();
+        await refreshAppBalance();
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const schedule = () => {
+      if (cancelled) return;
+      const delay = document.visibilityState === "visible" ? 20_000 : 45_000;
+      timerId = setTimeout(async () => {
+        await tick();
+        schedule();
+      }, delay);
+    };
+
+    schedule();
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        if (timerId) {
+          clearTimeout(timerId);
+          timerId = null;
+        }
+        void tick();
+        schedule();
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
+  }, [anchorWallet, connected, refreshAppBalance, syncFromChain]);
+
     if (!connected || !anchorWallet) {
       pushToast("Connect wallet to create invoice");
       return;
@@ -296,6 +348,7 @@ export function AppShell() {
 
       pushToast(`Invoice created on-chain: ${signature.slice(0, 8)}...`);
       await syncFromChain();
+      await refreshAppBalance();
     } catch (error) {
       pushToast(`Create failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
