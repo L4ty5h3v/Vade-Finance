@@ -39,13 +39,13 @@ export default function DocsPage() {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#eef5ff_0%,#e7f0fd_55%,#eef5ff_100%)] text-[#102749]">
       <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-8">
-        <Link href="/" className="text-sm font-medium text-[#2b5ba8] hover:text-[#173f82]">
+        <Link href="https://vade.finance" className="text-sm font-medium text-[#2b5ba8] hover:text-[#173f82]">
           ← Back to landing
         </Link>
 
         <header className="mt-5 rounded-3xl border border-[#c6d8f2] bg-white/80 p-6 md:p-8">
           <div className="mb-3">
-            <BrandLogo href="/" size="lg" />
+            <BrandLogo href="https://vade.finance" size="lg" />
           </div>
           <p className="text-xs uppercase tracking-[0.16em] text-[#5c769b]">Documentation</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#102b56] md:text-4xl">vade Protocol & Product Docs</h1>
