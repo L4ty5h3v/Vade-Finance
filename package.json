@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
-    "@prisma/client": "^6.14.0",
+    "@prisma/client": "^6.19.3",
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",
     "@solana/spl-token": "^0.4.14",
