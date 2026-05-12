@@ -1,0 +1,10 @@
+{
+  "cluster": "devnet",
+  "programId": "3bto824ndCi9jr1zpYrkhUTtGz8JpCvNV2d5ExzdpUqJ",
+  "configPda": "CuZZFHCT8Y5CMSsNMAdAvtK49x44F4KrZFssgKNjkjTC",
+  "stableMint": "FCKJkWowg9aRVWYRwTUcfrYuRaZpASScSHG9XwVvkeoF",
+  "treasuryAta": "5TQMeFuQ7bWRwpNGtfTGMM2pRETRVGXWLnBGQb3wZE54",
+  "verifier": "EYKYquhnVXEoP1M93NhPLJu71CvFYABKCpkFpkNtmr3n",
+  "admin": "EYKYquhnVXEoP1M93NhPLJu71CvFYABKCpkFpkNtmr3n",
+  "createdAt": "2026-05-11T20:21:33.306Z"
+}
