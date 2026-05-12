@@ -594,6 +594,14 @@ export function AppShell() {
 
     if (effectiveActiveView === "History") {
       if (role === "Verifier") return null;
+      if (!connected) {
+        return (
+          <section className="rounded-3xl border border-[#c8d9ef] bg-white/80 p-8 text-center">
+            <h2 className="text-xl font-semibold text-[#153861]">History locked</h2>
+            <p className="mt-2 text-sm text-[#5f7799]">Connect wallet to view your history data.</p>
+          </section>
+        );
+      }
       return <HistoryView invoices={invoices} />;
     }
 
