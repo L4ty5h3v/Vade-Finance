@@ -12,7 +12,7 @@ const navItems = [
   { label: "How it Works", href: "/#how-it-works" },
   { label: "Marketplace", href: "/#marketplace-preview" },
   { label: "Security", href: "/#security" },
-  { label: "Docs", href: "/docs" },
+  { label: "Docs", href: "https://docs.vade.finance" },
 ];
 
 export default function Header() {
@@ -84,6 +84,14 @@ export default function Header() {
                   >
                     {item.label}
                   </a>
+                ) : item.href.startsWith("http") ? (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70 hover:text-[#103d88]"
+                  >
+                    {item.label}
+                  </a>
                 ) : (
                   <Link
                     key={item.label}
@@ -97,12 +105,12 @@ export default function Header() {
             </nav>
 
             <div className="hidden items-center gap-3 md:flex">
-              <Link
-                href="/app"
+              <a
+                href="https://app.vade.finance"
                 className="rounded-xl border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-4 py-2 text-sm font-semibold text-[#0f3f91] shadow-[0_16px_30px_rgba(21,64,143,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffffff]"
               >
                 Launch App
-              </Link>
+              </a>
             </div>
 
             <button
@@ -141,6 +149,15 @@ export default function Header() {
                       >
                         {item.label}
                       </a>
+                    ) : item.href.startsWith("http") ? (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70"
+                      >
+                        {item.label}
+                      </a>
                     ) : (
                       <Link
                         key={item.label}
@@ -152,13 +169,13 @@ export default function Header() {
                       </Link>
                     )
                   ))}
-                  <Link
-                    href="/app"
+                  <a
+                    href="https://app.vade.finance"
                     className="mt-2 rounded-xl border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-4 py-2 text-center text-sm font-semibold text-[#0f3f91]"
                     onClick={() => setOpen(false)}
                   >
                     Launch App
-                  </Link>
+                  </a>
                 </div>
               </motion.nav>
             ) : null}

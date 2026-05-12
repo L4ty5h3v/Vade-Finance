@@ -12,11 +12,33 @@
       "permanent": true
     },
     {
+      "source": "/app",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.vade.finance"
+        }
+      ],
+      "destination": "https://app.vade.finance",
+      "permanent": true
+    },
+    {
       "source": "/app/:path*",
       "has": [
         {
           "type": "host",
           "value": "vade.finance"
+        }
+      ],
+      "destination": "https://app.vade.finance/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/app/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.vade.finance"
         }
       ],
       "destination": "https://app.vade.finance/:path*",
@@ -34,11 +56,33 @@
       "permanent": true
     },
     {
+      "source": "/docs",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.vade.finance"
+        }
+      ],
+      "destination": "https://docs.vade.finance",
+      "permanent": true
+    },
+    {
       "source": "/docs/:path*",
       "has": [
         {
           "type": "host",
           "value": "vade.finance"
+        }
+      ],
+      "destination": "https://docs.vade.finance/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/docs/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.vade.finance"
         }
       ],
       "destination": "https://docs.vade.finance/:path*",
