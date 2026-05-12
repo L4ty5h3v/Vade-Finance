@@ -1,0 +1,20 @@
+<svg width="1200" height="220" viewBox="0 0 1200 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="wordGradient" x1="22" y1="44" x2="1038" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4AACFF"/>
+      <stop offset="0.48" stop-color="#3296FF"/>
+      <stop offset="1" stop-color="#2B7CF6"/>
+    </linearGradient>
+  </defs>
+
+  <text
+    x="18"
+    y="118"
+    fill="url(#wordGradient)"
+    font-family="Geist, Avenir Next, Segoe UI, sans-serif"
+    font-size="118"
+    font-weight="600"
+    letter-spacing="-3.5"
+    dominant-baseline="middle"
+  >vade finance</text>
+</svg>
