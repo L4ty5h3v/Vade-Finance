@@ -1,17 +1,42 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { Play } from "lucide-react";
 import { VerificationItem } from "@/lib/app-data";
 import { RiskBadge } from "./RiskBadge";
 import { StatusBadge } from "./StatusBadge";
 
 const formatUSDT = (amount: number) => `${amount.toLocaleString("en-US")} USDT`;
 
+const canRun = (
+  status: VerificationItem["status"],
+  action: "verify" | "list" | "repay" | "claim" | "reject" | "default",
+) => {
+  switch (action) {
+    case "verify":
+      return status === "Submitted";
+    case "list":
+      return status === "Verified";
+    case "repay":
+      return status === "Funded";
+    case "claim":
+      return status === "Repaid";
+    case "reject":
+      return status === "Submitted" || status === "Verified" || status === "Listed";
+    case "default":
+      return status === "Funded";
+    default:
+      return false;
+  }
+};
+
 type Props = {
   queue: VerificationItem[];
   onVerify: (invoiceId: string) => void;
+  onList: (invoiceId: string) => void;
   onReject: (invoiceId: string) => void;
   onSimulateRepayment: (invoiceId: string) => void;
+  onClaim: (invoiceId: string) => void;
   onMarkDefault: (invoiceId: string) => void;
   onOpenDetail: (invoiceId: string) => void;
   canManage: boolean;
@@ -20,8 +45,10 @@ type Props = {
 export function VerificationView({
   queue,
   onVerify,
+  onList,
   onReject,
   onSimulateRepayment,
+  onClaim,
   onMarkDefault,
   onOpenDetail,
   canManage,
@@ -34,7 +61,7 @@ export function VerificationView({
         <h2 className="text-lg font-semibold text-[#143260]">Verification queue</h2>
         <p className="text-sm text-[#5d7598]">
           Submitted invoices waiting for legal and risk checks.
-          {!canManage ? " Action controls are enabled for Investor role." : ""}
+          {!canManage ? " Connect wallet to run on-chain actions." : ""}
         </p>
       </div>
 
@@ -62,7 +89,16 @@ export function VerificationView({
                   transition={{ duration: 0.35, delay: idx * 0.04 }}
                   className="border-t border-[#d8e5f7] text-[#163b67]"
                 >
-                  <td className="px-4 py-3 font-semibold">{item.invoiceId}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-semibold">{item.invoiceId}</p>
+                    <button
+                      type="button"
+                      onClick={() => onOpenDetail(item.invoiceId)}
+                      className="mt-1 inline-flex items-center rounded-md border border-[#bfd4f5] bg-[#f1f7ff] px-2 py-0.5 text-[11px] font-semibold text-[#2b5ea8] transition-colors duration-200 hover:border-[#9ebfe9] hover:bg-[#eaf3ff] hover:text-[#234f95]"
+                    >
+                      View details
+                    </button>
+                  </td>
                   <td className="px-4 py-3">{item.exporter}</td>
                   <td className="px-4 py-3">{item.debtor}</td>
                   <td className="px-4 py-3">{formatUSDT(item.amount)}</td>
@@ -77,12 +113,73 @@ export function VerificationView({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1.5">
-                      <button type="button" onClick={() => onOpenDetail(item.invoiceId)} className="rounded-lg border border-[#c4d7f3] bg-white px-2 py-1 text-[11px] font-semibold text-[#284d84]">Details</button>
-                      <button type="button" disabled={!canManage} onClick={() => onVerify(item.invoiceId)} className="rounded-lg border border-emerald-300 bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-800 disabled:cursor-not-allowed disabled:opacity-45">Verify</button>
-                      <button type="button" disabled={!canManage} onClick={() => onReject(item.invoiceId)} className="rounded-lg border border-rose-300 bg-rose-100 px-2 py-1 text-[11px] font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-45">Reject</button>
-                      <button type="button" disabled={!canManage} onClick={() => onSimulateRepayment(item.invoiceId)} className="rounded-lg border border-cyan-300 bg-cyan-100 px-2 py-1 text-[11px] font-semibold text-cyan-800 disabled:cursor-not-allowed disabled:opacity-45">Simulate Repayment</button>
-                      <button type="button" disabled={!canManage} onClick={() => onMarkDefault(item.invoiceId)} className="rounded-lg border border-red-300 bg-red-100 px-2 py-1 text-[11px] font-semibold text-red-800 disabled:cursor-not-allowed disabled:opacity-45">Mark Default</button>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={!canManage || !canRun(item.status, "verify")}
+                          onClick={() => onVerify(item.invoiceId)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-800 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <Play size={10} />
+                          Verify
+                        </button>
+                        <span className="text-[11px] text-[#7a93b3]">→</span>
+                        <button
+                          type="button"
+                          disabled={!canManage || !canRun(item.status, "list")}
+                          onClick={() => onList(item.invoiceId)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-100 px-2 py-1 text-[11px] font-semibold text-blue-800 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <Play size={10} />
+                          List
+                        </button>
+                        <span className="text-[11px] text-[#7a93b3]">→</span>
+                        <button
+                          type="button"
+                          disabled={!canManage || !canRun(item.status, "repay")}
+                          onClick={() => onSimulateRepayment(item.invoiceId)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-cyan-300 bg-cyan-100 px-2 py-1 text-[11px] font-semibold text-cyan-800 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <Play size={10} />
+                          Repay
+                        </button>
+                        <span className="text-[11px] text-[#7a93b3]">→</span>
+                        <button
+                          type="button"
+                          disabled={!canManage || !canRun(item.status, "claim")}
+                          onClick={() => onClaim(item.invoiceId)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-teal-300 bg-teal-100 px-2 py-1 text-[11px] font-semibold text-teal-800 disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          <Play size={10} />
+                          Claim
+                        </button>
+                      </div>
+                      <details className="group">
+                        <summary className="cursor-pointer select-none text-[11px] font-semibold text-[#5579a9] transition hover:text-[#2f5d9d]">
+                          More actions
+                        </summary>
+                        <div className="mt-1 flex flex-wrap gap-1.5">
+                          <button
+                            type="button"
+                            disabled={!canManage || !canRun(item.status, "reject")}
+                            onClick={() => onReject(item.invoiceId)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-rose-300 bg-rose-100 px-2 py-1 text-[11px] font-semibold text-rose-800 disabled:cursor-not-allowed disabled:opacity-45"
+                          >
+                            <Play size={10} />
+                            Reject
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!canManage || !canRun(item.status, "default")}
+                            onClick={() => onMarkDefault(item.invoiceId)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-red-100 px-2 py-1 text-[11px] font-semibold text-red-800 disabled:cursor-not-allowed disabled:opacity-45"
+                          >
+                            <Play size={10} />
+                            Mark Default
+                          </button>
+                        </div>
+                      </details>
                     </div>
                   </td>
                 </motion.tr>

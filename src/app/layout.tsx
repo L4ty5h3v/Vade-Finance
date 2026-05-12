@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "vade | From invoice to liquidity instantly",
+  title: "Vade Finance",
   description:
-    "vade is a compliance-ready invoice financing marketplace for Turkish exporters, powered by Solana settlement.",
+    "vade.finance is a compliance-ready invoice financing marketplace for Turkish exporters, powered by Solana settlement.",
 };
 
 export default function RootLayout({

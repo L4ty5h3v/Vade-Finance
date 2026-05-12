@@ -113,7 +113,7 @@ export function PortfolioView({
                         className="rounded-lg border border-[#c4d7f3] bg-white px-3 py-1.5 text-xs font-semibold text-[#284d84]"
                         onClick={() => onOpenDetail(row.invoiceId)}
                       >
-                        View
+                        View details
                       </button>
                     </td>
                   </motion.tr>
@@ -208,7 +208,7 @@ export function PortfolioView({
                         className="rounded-lg border border-[#c4d7f3] bg-white px-3 py-1.5 text-xs font-semibold text-[#284d84]"
                         onClick={() => onOpenDetail(row.id)}
                       >
-                        View
+                        View details
                       </button>
                     </td>
                   </motion.tr>

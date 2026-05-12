@@ -25,7 +25,7 @@ export default function BrandLogo({ href, size = "md", theme = "light", classNam
         <span className="absolute left-1.5 top-1.5 h-3 w-3 rounded-[4px] border border-white/55 bg-white/70" />
       </span>
       <span className={`${sizeMap[size]} select-none font-semibold lowercase tracking-[-0.025em] text-transparent bg-clip-text bg-gradient-to-r ${wordTone}`}>
-        vade
+        vade.finance
       </span>
     </span>
   );

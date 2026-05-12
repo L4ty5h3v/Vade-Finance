@@ -7,6 +7,7 @@ export type InvoiceStatus =
   | "Submitted"
   | "Rejected"
   | "Repaid"
+  | "Claimed"
   | "Defaulted"
   | "Pending";
 
@@ -14,6 +15,9 @@ export type FundingStatus = "Open" | "Funded" | "Pending";
 export type VerificationStatus = "Verified" | "Submitted" | "Rejected" | "Pending";
 
 export type InvoiceRecord = {
+  pubkey?: string;
+  exporterWallet?: string;
+  investorWallet?: string;
   id: string;
   exporter: string;
   debtor: string;
@@ -52,6 +56,9 @@ export type PortfolioPosition = {
 };
 
 export type VerificationItem = {
+  pubkey?: string;
+  exporterWallet?: string;
+  investorWallet?: string;
   invoiceId: string;
   exporter: string;
   debtor: string;
@@ -59,7 +66,7 @@ export type VerificationItem = {
   documents: string[];
   risk: RiskGrade;
   duplicateCheck: "Clean" | "Flagged";
-  status: "Submitted" | "Verified" | "Rejected" | "Repaid" | "Defaulted";
+  status: "Submitted" | "Verified" | "Listed" | "Funded" | "Rejected" | "Repaid" | "Claimed" | "Defaulted";
 };
 
 export const overviewMetrics = [

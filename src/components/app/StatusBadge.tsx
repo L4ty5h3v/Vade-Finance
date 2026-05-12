@@ -1,7 +1,7 @@
 import { InvoiceStatus } from "@/lib/app-data";
 
 type Props = {
-  status: InvoiceStatus | "Active" | "Defaulted" | "Open" | "Pending";
+  status: InvoiceStatus | "Claimed" | "Active" | "Defaulted" | "Open" | "Pending";
 };
 
 const map: Record<Props["status"], string> = {
@@ -11,6 +11,7 @@ const map: Record<Props["status"], string> = {
   Submitted: "bg-amber-100 text-amber-800 border-amber-300",
   Rejected: "bg-rose-100 text-rose-800 border-rose-300",
   Repaid: "bg-cyan-100 text-cyan-800 border-cyan-300",
+  Claimed: "bg-teal-100 text-teal-800 border-teal-300",
   Defaulted: "bg-red-100 text-red-800 border-red-300",
   Pending: "bg-slate-100 text-slate-800 border-slate-300",
   Active: "bg-cyan-100 text-cyan-800 border-cyan-300",

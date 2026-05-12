@@ -42,7 +42,7 @@ export function FundInvoiceModal({ open, invoice, onClose, onConfirm }: Props) {
             </div>
 
             <p className="mt-4 rounded-xl border border-[#d5e3f7] bg-[#f1f7ff] px-3 py-2 text-xs text-[#4e6e99]">
-              Confirmation updates interface state and portfolio tracking.
+              Confirmation sends an on-chain devnet transaction.
             </p>
 
             <div className="mt-5 flex justify-end gap-2">
