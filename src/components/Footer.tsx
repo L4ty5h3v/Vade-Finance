@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-14 md:px-8">
         <div className="grid gap-10 md:grid-cols-[1.3fr_repeat(4,1fr)]">
           <div>
-            <BrandLogo href="/" size="lg" theme="dark" />
+            <BrandLogo href="https://vade.finance" size="lg" theme="dark" />
             <p className="mt-3 max-w-xs text-sm leading-6 text-[#aecaef]">
               Invoice financing infrastructure for verified exporters, powered by Solana settlement.
             </p>

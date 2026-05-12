@@ -71,7 +71,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4 pt-4 md:px-8">
         <div className="frosted rounded-2xl border border-white/45">
           <div className="flex h-16 items-center justify-between px-4 md:px-6">
-            <BrandLogo href="/" size="md" />
+            <BrandLogo href="https://vade.finance" size="md" />
 
             <nav className="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
               {navItems.map((item) => (

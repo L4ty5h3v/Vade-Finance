@@ -39,7 +39,7 @@ export function Sidebar({ active, role, onSelect, onNavigate }: Props) {
     <aside className="flex h-full w-full max-w-[280px] flex-col border-r border-[#ccdcf2] bg-[linear-gradient(180deg,#f9fbff_0%,#eef4ff_100%)] p-4 md:p-5">
       <div className="mb-6 flex items-center gap-2 px-2">
         <div>
-          <BrandLogo href="/" size="sm" />
+          <BrandLogo href="https://vade.finance" size="sm" />
         </div>
       </div>
 
