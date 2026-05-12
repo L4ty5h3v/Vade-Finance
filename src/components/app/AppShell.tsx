@@ -569,6 +569,14 @@ export function AppShell() {
 
     if (effectiveActiveView === "Portfolio") {
       if (role === "Verifier") return null;
+      if (!connected) {
+        return (
+          <section className="rounded-3xl border border-[#c8d9ef] bg-white/80 p-8 text-center">
+            <h2 className="text-xl font-semibold text-[#153861]">Portfolio locked</h2>
+            <p className="mt-2 text-sm text-[#5f7799]">Connect wallet to view your portfolio data.</p>
+          </section>
+        );
+      }
       return (
         <PortfolioView
           role={role}
