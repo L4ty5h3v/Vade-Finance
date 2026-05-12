@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.vade.finance"
+        }
+      ],
+      "destination": "https://vade.finance/app/:path*",
+      "permanent": true
+    }
+  ]
+}
