@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import type { MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import BrandLogo from "./BrandLogo";
 
 const navItems = [
@@ -16,6 +17,48 @@ const navItems = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const reducedMotion = useReducedMotion();
+
+  const centerToHash = (hash: string, behavior: ScrollBehavior = "smooth") => {
+    if (!hash.startsWith("#")) return;
+    const id = hash.slice(1);
+    if (!id) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.scrollIntoView({ behavior, block: "center" });
+  };
+
+  const onNavAnchorClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!href.startsWith("/#")) {
+      return;
+    }
+
+    if (window.location.pathname !== "/") {
+      return;
+    }
+
+    event.preventDefault();
+    const hash = href.slice(1);
+    history.replaceState(null, "", hash);
+    centerToHash(hash);
+  };
+
+  useEffect(() => {
+    const onHashChange = () => {
+      centerToHash(window.location.hash);
+    };
+
+    if (window.location.pathname === "/" && window.location.hash) {
+      // Wait for sections to render before initial centering.
+      requestAnimationFrame(() => {
+        centerToHash(window.location.hash, "auto");
+      });
+    }
+
+    window.addEventListener("hashchange", onHashChange);
+    return () => {
+      window.removeEventListener("hashchange", onHashChange);
+    };
+  }, []);
 
   return (
     <motion.header
@@ -34,6 +77,7 @@ export default function Header() {
                 <a
                   key={item.label}
                   href={item.href}
+                  onClick={(event) => onNavAnchorClick(event, item.href)}
                   className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70 hover:text-[#103d88]"
                 >
                   {item.label}
@@ -77,8 +121,11 @@ export default function Header() {
                     <a
                       key={item.label}
                       href={item.href}
+                      onClick={(event) => {
+                        onNavAnchorClick(event, item.href);
+                        setOpen(false);
+                      }}
                       className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70"
-                      onClick={() => setOpen(false)}
                     >
                       {item.label}
                     </a>
