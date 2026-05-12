@@ -4,6 +4,7 @@ import { apiError, apiOk, notFound } from "@/lib/server/errors";
 import { serializeEvent, serializeInvoice } from "@/lib/server/serializers";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(_: Request, ctx: { params: Promise<{ invoiceId: string }> }) {
   try {

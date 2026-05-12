@@ -3,10 +3,12 @@ import { getOrCreateBalance, setBalance } from "@/lib/server/balance";
 import { prisma } from "@/lib/server/db";
 import { apiError, apiOk, badRequest, insufficientBalance } from "@/lib/server/errors";
 import { requestMeta, writeAuditLog } from "@/lib/server/audit";
+import { checkRateLimit, createRateLimitResponse, getRateLimitKey } from "@/lib/server/rate-limit";
 import { setBalanceSchema } from "@/lib/server/validators";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const changeSchema = z.object({
   action: z.enum(["deposit", "withdraw", "set"]),
@@ -31,6 +33,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = checkRateLimit({
+      key: getRateLimitKey(request, "balance_mutation"),
+      limit: 40,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.ok) return createRateLimitResponse(rateLimit.retryAfterSeconds);
+
     const user = await requireSessionUser();
     const body = await request.json();
     const parsed = changeSchema.safeParse(body);

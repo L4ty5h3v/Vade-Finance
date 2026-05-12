@@ -4,11 +4,13 @@ import { prisma } from "@/lib/server/db";
 import { apiError, apiOk, badRequest } from "@/lib/server/errors";
 import { enqueueVerification } from "@/lib/server/queue";
 import { requireRole } from "@/lib/server/rbac";
+import { checkRateLimit, createRateLimitResponse, getRateLimitKey } from "@/lib/server/rate-limit";
 import { serializeInvoice } from "@/lib/server/serializers";
 import { createInvoiceSchema } from "@/lib/server/validators";
 import { writeAuditLog, requestMeta } from "@/lib/server/audit";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const statusMap: Record<string, InvoiceStatus> = {
   Submitted: InvoiceStatus.SUBMITTED,
@@ -60,6 +62,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = checkRateLimit({
+      key: getRateLimitKey(request, "invoice_create"),
+      limit: 20,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.ok) return createRateLimitResponse(rateLimit.retryAfterSeconds);
+
     const user = await requireSessionUser();
     requireRole(user, [UserRole.EXPORTER, UserRole.ADMIN]);
 

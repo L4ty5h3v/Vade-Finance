@@ -4,6 +4,7 @@ import { prisma } from "@/lib/server/db";
 import { apiError, apiOk } from "@/lib/server/errors";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {

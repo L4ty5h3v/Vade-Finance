@@ -2,6 +2,7 @@ import { apiOk } from "@/lib/server/errors";
 import { serverEnv } from "@/lib/server/env";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   return apiOk({

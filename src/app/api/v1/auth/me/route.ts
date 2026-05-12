@@ -1,9 +1,11 @@
 import { UserRole } from "@prisma/client";
 import { getSessionUser, updateSessionProfile } from "@/lib/server/auth";
 import { apiError, apiOk, badRequest, unauthorized } from "@/lib/server/errors";
+import { checkRateLimit, createRateLimitResponse, getRateLimitKey } from "@/lib/server/rate-limit";
 import { z } from "zod";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const updateSchema = z.object({
   role: z.nativeEnum(UserRole).optional(),
@@ -26,6 +28,13 @@ export async function GET() {
 
 export async function PATCH(request: Request) {
   try {
+    const rateLimit = checkRateLimit({
+      key: getRateLimitKey(request, "auth_profile_update"),
+      limit: 30,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.ok) return createRateLimitResponse(rateLimit.retryAfterSeconds);
+
     const user = await getSessionUser();
     if (!user) unauthorized();
 

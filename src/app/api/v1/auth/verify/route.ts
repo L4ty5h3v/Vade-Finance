@@ -2,12 +2,21 @@ import { NextResponse } from "next/server";
 import { verifyWalletChallenge } from "@/lib/server/auth";
 import { apiError, badRequest } from "@/lib/server/errors";
 import { serverEnv } from "@/lib/server/env";
+import { checkRateLimit, createRateLimitResponse, getRateLimitKey } from "@/lib/server/rate-limit";
 import { authVerifySchema } from "@/lib/server/validators";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = checkRateLimit({
+      key: getRateLimitKey(request, "auth_verify"),
+      limit: 20,
+      windowMs: 60_000,
+    });
+    if (!rateLimit.ok) return createRateLimitResponse(rateLimit.retryAfterSeconds);
+
     const body = await request.json();
     const parsed = authVerifySchema.safeParse(body);
     if (!parsed.success) badRequest("Invalid verify payload");
