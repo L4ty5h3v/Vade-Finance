@@ -2,7 +2,6 @@
 
 import { ArrowDownToLine, ArrowUpFromLine, CheckCircle2, Clock3, XCircle } from "lucide-react";
 import { InvoiceRecord } from "@/lib/app-data";
-import { UserRole } from "./types";
 
 const formatUSDT = (amount: number) => `${amount.toLocaleString("en-US")} USDT`;
 
@@ -16,88 +15,51 @@ type HistoryItem = {
   tone: "blue" | "emerald" | "amber" | "rose";
 };
 
-function buildHistory(role: UserRole, invoices: InvoiceRecord[]): HistoryItem[] {
+function buildHistory(invoices: InvoiceRecord[]): HistoryItem[] {
   const items = invoices
     .map((invoice) => {
-      if (role === "Exporter") {
-        if (invoice.status === "Funded") {
-          return {
-            id: `${invoice.id}-funded`,
-            invoiceId: invoice.id,
-            title: "Funding received",
-            subtitle: `Investor funded this invoice`,
-            amount: formatUSDT(invoice.purchasePrice),
-            status: "Funded",
-            tone: "emerald" as const,
-          };
-        }
-        if (invoice.status === "Repaid") {
-          return {
-            id: `${invoice.id}-repaid`,
-            invoiceId: invoice.id,
-            title: "Repayment posted",
-            subtitle: "Repayment transaction submitted",
-            amount: formatUSDT(invoice.faceValue),
-            status: "Repaid",
-            tone: "blue" as const,
-          };
-        }
-        if (invoice.status === "Claimed") {
-          return {
-            id: `${invoice.id}-claimed`,
-            invoiceId: invoice.id,
-            title: "Claim completed",
-            subtitle: "Investor claim finalized",
-            status: "Claimed",
-            tone: "blue" as const,
-          };
-        }
+      if (invoice.status === "Funded") {
+        return {
+          id: `${invoice.id}-funded`,
+          invoiceId: invoice.id,
+          title: "Invoice funded",
+          subtitle: "Funding transfer executed",
+          amount: formatUSDT(invoice.purchasePrice),
+          status: "Funded",
+          tone: "blue" as const,
+        };
       }
-
-      if (role === "Investor") {
-        if (invoice.status === "Funded") {
-          return {
-            id: `${invoice.id}-funded`,
-            invoiceId: invoice.id,
-            title: "Invoice funded",
-            subtitle: "Position opened",
-            amount: formatUSDT(invoice.purchasePrice),
-            status: "Funded",
-            tone: "blue" as const,
-          };
-        }
-        if (invoice.status === "Repaid") {
-          return {
-            id: `${invoice.id}-repaid`,
-            invoiceId: invoice.id,
-            title: "Repayment arrived",
-            subtitle: "Funds are in vault, ready to claim",
-            amount: formatUSDT(invoice.faceValue),
-            status: "Repaid",
-            tone: "emerald" as const,
-          };
-        }
-        if (invoice.status === "Claimed") {
-          return {
-            id: `${invoice.id}-claimed`,
-            invoiceId: invoice.id,
-            title: "Repayment claimed",
-            subtitle: "Funds moved to your account",
-            amount: formatUSDT(invoice.faceValue),
-            status: "Claimed",
-            tone: "emerald" as const,
-          };
-        }
-        if (invoice.status === "Defaulted") {
-          return {
-            id: `${invoice.id}-defaulted`,
-            invoiceId: invoice.id,
-            title: "Default event",
-            subtitle: "Position marked as defaulted",
-            status: "Defaulted",
-            tone: "rose" as const,
-          };
-        }
+      if (invoice.status === "Repaid") {
+        return {
+          id: `${invoice.id}-repaid`,
+          invoiceId: invoice.id,
+          title: "Repayment posted",
+          subtitle: "Funds moved to invoice vault",
+          amount: formatUSDT(invoice.faceValue),
+          status: "Repaid",
+          tone: "emerald" as const,
+        };
+      }
+      if (invoice.status === "Claimed") {
+        return {
+          id: `${invoice.id}-claimed`,
+          invoiceId: invoice.id,
+          title: "Repayment claimed",
+          subtitle: "Claim transfer completed",
+          amount: formatUSDT(invoice.faceValue),
+          status: "Claimed",
+          tone: "emerald" as const,
+        };
+      }
+      if (invoice.status === "Defaulted") {
+        return {
+          id: `${invoice.id}-defaulted`,
+          invoiceId: invoice.id,
+          title: "Default event",
+          subtitle: "Invoice marked as defaulted",
+          status: "Defaulted",
+          tone: "rose" as const,
+        };
       }
 
       return {
@@ -126,12 +88,11 @@ function ToneBadge({ tone, status }: { tone: HistoryItem["tone"]; status: string
 }
 
 type Props = {
-  role: UserRole;
   invoices: InvoiceRecord[];
 };
 
-export function HistoryView({ role, invoices }: Props) {
-  const items = buildHistory(role, invoices);
+export function HistoryView({ invoices }: Props) {
+  const items = buildHistory(invoices);
 
   return (
     <section>

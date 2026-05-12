@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  EXPORTER
+  INVESTOR
+  VERIFIER
+  ADMIN
+}
+
+enum InvoiceStatus {
+  SUBMITTED
+  VERIFIED
+  LISTED
+  FUNDED
+  REPAID
+  CLAIMED
+  REJECTED
+  DEFAULTED
+  CANCELLED
+}
+
+model User {
+  id             String          @id @default(cuid())
+  wallet         String          @unique
+  role           UserRole
+  displayName    String
+  companyName    String?
+  kycStatus      String          @default("pending")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  exported       Invoice[]       @relation("ExporterInvoices")
+  invested       Invoice[]       @relation("InvestorInvoices")
+  events         InvoiceEvent[]
+  authSessions   AuthSession[]
+  challengeNonce WalletChallenge[]
+  balances       WalletBalance[]
+  auditLogs      AuditLog[]
+  fundings       Funding[]
+}
+
+model WalletChallenge {
+  id        String   @id @default(cuid())
+  wallet    String
+  nonce     String   @unique
+  message   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([wallet])
+}
+
+model AuthSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  invoiceId       String
+  invoiceIdHash   String
+  documentHash    String
+  metadataHash    String
+  exporterId      String
+  exporter        User          @relation("ExporterInvoices", fields: [exporterId], references: [id], onDelete: Restrict)
+  investorId      String?
+  investor        User?         @relation("InvestorInvoices", fields: [investorId], references: [id], onDelete: SetNull)
+  debtorName      String
+  debtorCountry   String
+  goodsCategory   String?
+  faceValue       BigInt
+  purchasePrice   BigInt
+  repaymentAmount BigInt
+  platformFeeBps  Int
+  dueTs           DateTime
+  status          InvoiceStatus @default(SUBMITTED)
+  riskScore       String
+  createdTs       DateTime      @default(now())
+  verifiedTs      DateTime?
+  fundedTs        DateTime?
+  repaidTs        DateTime?
+  claimedTs       DateTime?
+  rejectedTs      DateTime?
+  defaultedTs     DateTime?
+  cancelledTs     DateTime?
+  listedTs        DateTime?
+  invoicePda      String?
+  vaultState      String?
+  txSignature     String?
+  updatedAt       DateTime      @updatedAt
+  events          InvoiceEvent[]
+  documents       InvoiceDocument[]
+  funding         Funding?
+  repayment       Repayment?
+
+  @@unique([exporterId, invoiceIdHash])
+  @@index([status])
+  @@index([investorId])
+  @@index([invoiceId])
+}
+
+model InvoiceDocument {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  type        String
+  storageUrl  String
+  contentHash String
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+model InvoiceEvent {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  actorId     String?
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorWallet String
+  action      String
+  fromStatus  InvoiceStatus?
+  toStatus    InvoiceStatus?
+  note        String?
+  txSignature String?
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId, createdAt])
+  @@index([actorWallet])
+}
+
+model Funding {
+  id               String   @id @default(cuid())
+  invoiceId         String   @unique
+  invoice           Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  investorId        String
+  investor          User     @relation(fields: [investorId], references: [id], onDelete: Restrict)
+  amountBaseUnits   BigInt
+  feeBaseUnits      BigInt
+  netToExporterBase BigInt
+  fundedAt          DateTime @default(now())
+
+  @@index([investorId])
+}
+
+model Repayment {
+  id                 String   @id @default(cuid())
+  invoiceId           String   @unique
+  invoice             Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  payerWallet         String
+  amountBaseUnits     BigInt
+  claimableBaseUnits  BigInt
+  repaymentEventRef   String?
+  repaidAt            DateTime @default(now())
+  claimedAt           DateTime?
+
+  @@index([payerWallet])
+}
+
+model WalletBalance {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenSymbol        String
+  availableBaseUnits BigInt   @default(0)
+  lockedBaseUnits    BigInt   @default(0)
+  updatedAt          DateTime @updatedAt
+
+  @@unique([userId, tokenSymbol])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorId     String?
+  actor       User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorWallet String?
+  action      String
+  entity      String
+  entityId    String?
+  payloadHash String?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([actorWallet, createdAt])
+  @@index([entity, entityId])
+}

@@ -17,6 +17,7 @@ type Props = {
   onOpenCreate: () => void;
   onOpenDetail: (invoiceId: string) => void;
   onRepayInvoice: (invoiceId: string) => void;
+  onClaimInvoice: (invoiceId: string) => void;
 };
 
 export function PortfolioView({
@@ -28,6 +29,7 @@ export function PortfolioView({
   onOpenCreate,
   onOpenDetail,
   onRepayInvoice,
+  onClaimInvoice,
 }: Props) {
   const reducedMotion = useReducedMotion();
 
@@ -245,13 +247,24 @@ export function PortfolioView({
                     <td className="px-4 py-3">{row.dueDate}</td>
                     <td className="px-4 py-3"><StatusBadge status={row.status} /></td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        className="rounded-lg border border-[#c4d7f3] bg-white px-3 py-1.5 text-xs font-semibold text-[#284d84]"
-                        onClick={() => onOpenDetail(row.id)}
-                      >
-                        View details
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          className="rounded-lg border border-[#c4d7f3] bg-white px-3 py-1.5 text-xs font-semibold text-[#284d84]"
+                          onClick={() => onOpenDetail(row.id)}
+                        >
+                          View details
+                        </button>
+                        {row.status === "Repaid" ? (
+                          <button
+                            type="button"
+                            className="rounded-lg border border-teal-300 bg-teal-100 px-3 py-1.5 text-xs font-semibold text-teal-800"
+                            onClick={() => onClaimInvoice(row.id)}
+                          >
+                            Claim
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </motion.tr>
                 );

@@ -27,8 +27,9 @@ export function TopBar({ title, connected, role, displayName, isRegistered, onOp
         </button>
 
         <div className="min-w-0 flex-1">
+          <div className="mb-0.5 h-8" aria-hidden />
           <h1 className="text-lg font-semibold tracking-tight text-[#132c57] md:text-xl">{title}</h1>
-          <p className="mt-1 text-xs font-semibold text-[#4f6f98]">
+          <p className="mt-2 text-xs font-semibold text-[#4f6f98]">
             {!connected ? (
               "Connect wallet to load your registered role."
             ) : isRegistered ? (

@@ -37,7 +37,9 @@ export function MarketplaceView({ invoices, onViewDetails, onFundInvoice, canFun
               </tr>
             </thead>
             <tbody>
-              {filtered.map((invoice, idx) => (
+              {filtered.map((invoice, idx) => {
+                const canFundThis = canFund && invoice.status === "Listed";
+                return (
                 <motion.tr
                   key={invoice.id}
                   initial={reducedMotion ? false : { opacity: 0, y: 8 }}
@@ -67,7 +69,7 @@ export function MarketplaceView({ invoices, onViewDetails, onFundInvoice, canFun
                       </button>
                       <button
                         type="button"
-                        disabled={!canFund}
+                        disabled={!canFundThis}
                         className="rounded-lg border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-3 py-1.5 text-xs font-semibold text-[#0f3f91] hover:bg-white disabled:cursor-not-allowed disabled:opacity-45"
                         onClick={() => onFundInvoice(invoice)}
                       >
@@ -76,14 +78,16 @@ export function MarketplaceView({ invoices, onViewDetails, onFundInvoice, canFun
                     </div>
                   </td>
                 </motion.tr>
-              ))}
+              )})}
             </tbody>
           </table>
         </div>
       </section>
 
       <section className="grid gap-3 xl:hidden">
-        {filtered.map((invoice, idx) => (
+        {filtered.map((invoice, idx) => {
+          const canFundThis = canFund && invoice.status === "Listed";
+          return (
           <motion.article
             key={invoice.id}
             initial={reducedMotion ? false : { opacity: 0, y: 14 }}
@@ -119,7 +123,7 @@ export function MarketplaceView({ invoices, onViewDetails, onFundInvoice, canFun
               </button>
               <button
                 type="button"
-                disabled={!canFund}
+                disabled={!canFundThis}
                 className="flex-1 rounded-lg border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-3 py-2 text-xs font-semibold text-[#0f3f91] disabled:cursor-not-allowed disabled:opacity-45"
                 onClick={() => onFundInvoice(invoice)}
               >
@@ -127,7 +131,7 @@ export function MarketplaceView({ invoices, onViewDetails, onFundInvoice, canFun
               </button>
             </div>
           </motion.article>
-        ))}
+        )})}
       </section>
     </div>
   );

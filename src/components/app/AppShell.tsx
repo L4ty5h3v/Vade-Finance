@@ -579,13 +579,14 @@ export function AppShell() {
           onOpenCreate={() => setCreateOpen(true)}
           onOpenDetail={openById}
           onRepayInvoice={(invoiceId) => void onSimulateRepayment(invoiceId)}
+          onClaimInvoice={(invoiceId) => void onClaim(invoiceId)}
         />
       );
     }
 
     if (effectiveActiveView === "History") {
       if (role === "Verifier") return null;
-      return <HistoryView role={role} invoices={visibleInvoices} />;
+      return <HistoryView invoices={invoices} />;
     }
 
     if (effectiveActiveView === "Verification") {

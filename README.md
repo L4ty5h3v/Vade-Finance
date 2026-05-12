@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vade Finance
 
-## Getting Started
+**From invoice to liquidity instantly.**
+**Live domain:** [vade.finance](https://vade.finance)
 
-First, run the development server:
+## What This Product Actually Does (Degen Version)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Exporters are stuck holding IOUs for 30-90 days.  
+We turn those dead invoices into live liquidity.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Flow is simple:
+- exporter uploads a real trade invoice
+- platform verifies docs + risk
+- investor funds it at a discount
+- repayment and claim events are tracked on Solana
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In plain English:  
+**future cash gets pulled into the present**, and everyone sees the same state machine instead of trusting vibes and spreadsheets.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This is not a meme coin front-end.  
+This is invoice rails for real-world trade credit, packaged like a clean crypto product.
 
-## Learn More
+## Product Roles
 
-To learn more about Next.js, take a look at the following resources:
+| Role | What they do |
+| --- | --- |
+| Exporter | Creates invoice, gets verified, receives early liquidity |
+| Investor | Funds verified invoices, then claims repayment |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Core rules:
+- legal docs stay off-chain
+- hashes + lifecycle events go on-chain
+- statuses are human-readable but deterministic
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Status Flow
 
-## Deploy on Vercel
+1. `Submitted` - invoice created
+2. `Verified` - verification passed
+3. `Listed` - open for funding
+4. `Funded` - investor committed capital
+5. `Repaid` - payer sent repayment
+6. `Claimed` - investor claimed payout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+No fluff: this is a runnable demo flow you can test in [vade.finance/app](https://vade.finance/app).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Repo Map
+
+- `src/app` - landing, product pages, app shell
+- `src/app/api/v1` - backend API route handlers
+- `src/components` - UI and domain components
+- `src/lib/server` - backend auth/RBAC/invoice logic
+- `prisma/schema.prisma` - PostgreSQL schema
+- `contracts/vade_finance` - Anchor/Solana demo contracts
+- `docs` - runbook and contract/flow specs
+
+## Devnet Demo
+
+Full runbook:
+- `docs/DEVNET_DEMO_RUNBOOK.md`
+
+High-level sequence:
+1. deploy contract to devnet
+2. bootstrap mint/config
+3. mint test USDT
+4. run Exporter -> Investor -> Payer -> Investor
+
+## Backend (DB + API)
+
+Runbook:
+- `docs/BACKEND_SETUP.md`
+
+Stack:
+- PostgreSQL + Prisma
+- Next.js Route Handlers (`/api/v1/*`)
+- Optional Redis/BullMQ for async verification jobs
+
+Project setting:
+- backend runs in always-on `dev mode` (`VADE_DEV_MODE=true`) for demo speed
+
+## Important
+
+- **Demo/pilot**, not production.
+- Not financial advice.
+- Real launch requires full compliance and regulatory setup.
+
+---
+
+TL;DR:  
+**Vade Finance turns export invoices into liquid, trackable on-chain credit primitives with a clear UX for both sides of the deal.**
