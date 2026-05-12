@@ -262,12 +262,6 @@ export function AppShell() {
     void syncFromChain();
   }, [anchorWallet, connected, syncFromChain]);
 
-  const onCreateInvoice = async (input: NewInvoiceInput) => {
-    if (!profile) {
-      pushToast("Complete wallet registration first");
-      return;
-    }
-
   useEffect(() => {
     if (!connected || !anchorWallet) return;
 
@@ -318,6 +312,12 @@ export function AppShell() {
       }
     };
   }, [anchorWallet, connected, refreshAppBalance, syncFromChain]);
+
+  const onCreateInvoice = async (input: NewInvoiceInput) => {
+    if (!profile) {
+      pushToast("Complete wallet registration first");
+      return;
+    }
 
     if (!connected || !anchorWallet) {
       pushToast("Connect wallet to create invoice");

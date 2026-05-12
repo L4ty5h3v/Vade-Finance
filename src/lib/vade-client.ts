@@ -426,6 +426,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const fundInvoiceFromAppBalance = async (invoicePubkey: PublicKey, exporterPubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda, config } = await getConfig();
     const appAccount = await ensureAppBalanceAccount(config.stableMint);
     const exporterAtaResult = await maybeCreateAtaIx(connection, config.stableMint, exporterPubkey, wallet.publicKey);
@@ -469,6 +470,7 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   };
 
   const repayInvoiceFromAppBalance = async (invoicePubkey: PublicKey) => {
+    const program = await getProgram();
     const { configPda, config } = await getConfig();
     const [invoiceVault] = deriveInvoiceVault(invoicePubkey);
     const appAccount = await ensureAppBalanceAccount(config.stableMint);
