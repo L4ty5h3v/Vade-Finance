@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 import type { MouseEvent } from "react";
 import { useEffect, useState } from "react";
 import BrandLogo from "./BrandLogo";
@@ -74,24 +75,34 @@ export default function Header() {
 
             <nav className="hidden items-center gap-1 md:flex" aria-label="Primary navigation">
               {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={(event) => onNavAnchorClick(event, item.href)}
-                  className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70 hover:text-[#103d88]"
-                >
-                  {item.label}
-                </a>
+                item.href.startsWith("/#") ? (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={(event) => onNavAnchorClick(event, item.href)}
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70 hover:text-[#103d88]"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70 hover:text-[#103d88]"
+                  >
+                    {item.label}
+                  </Link>
+                )
               ))}
             </nav>
 
             <div className="hidden items-center gap-3 md:flex">
-              <a
+              <Link
                 href="/app"
                 className="rounded-xl border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-4 py-2 text-sm font-semibold text-[#0f3f91] shadow-[0_16px_30px_rgba(21,64,143,0.34)] transition hover:-translate-y-0.5 hover:bg-[#ffffff]"
               >
                 Launch App
-              </a>
+              </Link>
             </div>
 
             <button
@@ -118,24 +129,36 @@ export default function Header() {
               >
                 <div className="flex flex-col gap-1 p-3">
                   {navItems.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      onClick={(event) => {
-                        onNavAnchorClick(event, item.href);
-                        setOpen(false);
-                      }}
-                      className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70"
-                    >
-                      {item.label}
-                    </a>
+                    item.href.startsWith("/#") ? (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        onClick={(event) => {
+                          onNavAnchorClick(event, item.href);
+                          setOpen(false);
+                        }}
+                        className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="rounded-xl px-3 py-2 text-sm font-medium text-[#27416d] transition hover:bg-white/70"
+                      >
+                        {item.label}
+                      </Link>
+                    )
                   ))}
-                  <a
+                  <Link
                     href="/app"
                     className="mt-2 rounded-xl border border-[#b8d3ff] bg-[linear-gradient(160deg,#f8fbff,#dce9ff)] px-4 py-2 text-center text-sm font-semibold text-[#0f3f91]"
+                    onClick={() => setOpen(false)}
                   >
                     Launch App
-                  </a>
+                  </Link>
                 </div>
               </motion.nav>
             ) : null}

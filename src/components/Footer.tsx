@@ -1,3 +1,4 @@
+import Link from "next/link";
 import BrandLogo from "./BrandLogo";
 
 export default function Footer() {
@@ -16,7 +17,7 @@ export default function Footer() {
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#95b3df]">Product</p>
             <ul className="mt-3 space-y-2 text-sm text-[#d4e5ff]">
               <li><a href="#marketplace-preview" className="hover:text-white">Marketplace</a></li>
-              <li><a href="/app" className="hover:text-white">Dashboard</a></li>
+              <li><Link href="/app" className="hover:text-white">Dashboard</Link></li>
               <li><a href="#how-it-works" className="hover:text-white">Invoice Verification</a></li>
             </ul>
           </div>
@@ -33,7 +34,7 @@ export default function Footer() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#95b3df]">Resources</p>
             <ul className="mt-3 space-y-2 text-sm text-[#d4e5ff]">
-              <li><a href="/docs" className="hover:text-white">Docs</a></li>
+              <li><Link href="/docs" className="hover:text-white">Docs</Link></li>
               <li><a href="#" className="hover:text-white">API</a></li>
               <li><a href="#" className="hover:text-white">Legal</a></li>
             </ul>
