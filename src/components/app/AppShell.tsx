@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import dynamic from "next/dynamic";
 import { useConnection, useWallet, type AnchorWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { X } from "lucide-react";
@@ -17,10 +18,8 @@ import {
 } from "@/lib/app-data";
 import { createVadeClient } from "@/lib/vade-client";
 import { ActionSuccessModal } from "./ActionSuccessModal";
-import { CreateInvoiceModal, NewInvoiceInput } from "./CreateInvoiceModal";
+import type { NewInvoiceInput } from "./CreateInvoiceModal";
 import { DepositModal } from "./DepositModal";
-import { FundInvoiceModal } from "./FundInvoiceModal";
-import { InvoiceDetailDrawer } from "./InvoiceDetailDrawer";
 import { MarketplaceView } from "./MarketplaceView";
 import { HistoryView } from "./HistoryView";
 import { PortfolioView } from "./PortfolioView";
@@ -32,6 +31,10 @@ import { TopBar } from "./TopBar";
 import { AppView, UserRole, WalletProfile } from "./types";
 import { VerificationView } from "./VerificationView";
 import { WithdrawModal } from "./WithdrawModal";
+
+const CreateInvoiceModal = dynamic(() => import("./CreateInvoiceModal").then((mod) => mod.CreateInvoiceModal));
+const FundInvoiceModal = dynamic(() => import("./FundInvoiceModal").then((mod) => mod.FundInvoiceModal));
+const InvoiceDetailDrawer = dynamic(() => import("./InvoiceDetailDrawer").then((mod) => mod.InvoiceDetailDrawer));
 
 const titles: Record<AppView, string> = {
   Marketplace: "Invoice Marketplace",
