@@ -1,5 +1,6 @@
 import { ArrowLeft, BadgeCheck, CircleHelp, ShieldCheck, Wallet } from "lucide-react";
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 
 const quickStart = [
   "Open /app and connect your wallet.",
@@ -53,11 +54,12 @@ export default function DocsPage() {
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#eff6ff_0%,#e8f1ff_55%,#eef5ff_100%)] text-[#102749]">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 md:px-8">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#2b5ba8] hover:text-[#173f82]">
+        <Link href="https://vade.finance" className="inline-flex items-center gap-2 text-sm font-semibold text-[#2b5ba8] hover:text-[#173f82]">
           <ArrowLeft size={14} /> Back to landing
         </Link>
 
         <header className="mt-4 rounded-3xl border border-[#c6d8f2] bg-white/85 p-6 shadow-[0_16px_34px_rgba(19,52,98,0.08)] md:p-8">
+          <BrandLogo href="https://vade.finance" size="lg" />
           <p className="text-xs uppercase tracking-[0.16em] text-[#5c769b]">User Documentation</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#102b56] md:text-4xl">How to use vade.finance</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-[#4f678e] md:text-base">
