@@ -18,6 +18,9 @@ export type InvoiceRecord = {
   pubkey?: string;
   exporterWallet?: string;
   investorWallet?: string;
+  investor?: string;
+  vaultState?: string;
+  vaultBalance?: number;
   id: string;
   exporter: string;
   debtor: string;

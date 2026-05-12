@@ -2,9 +2,12 @@
 
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import {
+  ACCOUNT_SIZE,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   createAssociatedTokenAccountInstruction,
+  createInitializeAccountInstruction,
+  createTransferInstruction,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import {
@@ -12,6 +15,7 @@ import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
+  Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
 import { Buffer } from "buffer";
@@ -24,6 +28,7 @@ const VADE_PROGRAM_ID = new PublicKey(
 
 const idl = idlJson as Idl;
 const MICRO = 1_000_000;
+const APP_BALANCE_SEED = "vade-app-balance-v1";
 
 export type OnchainCreateInput = {
   invoiceNumber: string;
@@ -46,6 +51,8 @@ export type OnchainInvoice = {
   dueDate: string;
   risk: "A-" | "B+" | "B";
   status: "Submitted" | "Verified" | "Listed" | "Funded" | "Repaid" | "Claimed" | "Defaulted";
+  vaultState: string;
+  vaultBalanceUi: number;
   documentHash: string;
   metadataHash: string;
   createdTs: number;
@@ -108,6 +115,14 @@ function statusToLabel(status: unknown): OnchainInvoice["status"] {
   }
 }
 
+function deriveVaultState(status: OnchainInvoice["status"], vaultBalanceUi: number): string {
+  if (status === "Defaulted") return "defaulted";
+  if (status === "Repaid") return vaultBalanceUi > 0 ? "ready_to_claim" : "repaid_pending_sync";
+  if (status === "Claimed") return vaultBalanceUi > 0 ? "claim_processing" : "claimed_out";
+  if (status === "Funded") return vaultBalanceUi > 0 ? "funds_in_vault" : "awaiting_repayment";
+  return "initialized";
+}
+
 function riskFromScore(score: number): "A-" | "B+" | "B" {
   if (score <= 35) return "A-";
   if (score <= 70) return "B+";
@@ -151,6 +166,10 @@ function deriveInvoiceVault(invoicePubkey: PublicKey): [PublicKey, number] {
   return PublicKey.findProgramAddressSync([Buffer.from("invoice_vault"), invoicePubkey.toBuffer()], VADE_PROGRAM_ID);
 }
 
+async function deriveAppBalanceAccount(owner: PublicKey): Promise<PublicKey> {
+  return PublicKey.createWithSeed(owner, APP_BALANCE_SEED, TOKEN_PROGRAM_ID);
+}
+
 async function maybeCreateAtaIx(
   connection: Connection,
   mint: PublicKey,
@@ -187,14 +206,106 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
     return { configPda, config };
   };
 
+  const ensureAppBalanceAccount = async (mint: PublicKey): Promise<PublicKey> => {
+    const appAccount = await deriveAppBalanceAccount(wallet.publicKey);
+    const existing = await connection.getAccountInfo(appAccount, "confirmed");
+    if (existing) return appAccount;
+
+    const lamports = await connection.getMinimumBalanceForRentExemption(ACCOUNT_SIZE);
+    const tx = new Transaction().add(
+      SystemProgram.createAccountWithSeed({
+        fromPubkey: wallet.publicKey,
+        newAccountPubkey: appAccount,
+        basePubkey: wallet.publicKey,
+        seed: APP_BALANCE_SEED,
+        lamports,
+        space: ACCOUNT_SIZE,
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      createInitializeAccountInstruction(appAccount, mint, wallet.publicKey, TOKEN_PROGRAM_ID),
+    );
+
+    await provider.sendAndConfirm(tx, [], { commitment: "confirmed" });
+    return appAccount;
+  };
+
+  const getAppBalance = async (): Promise<{ account: PublicKey; amountUi: number }> => {
+    const appAccount = await deriveAppBalanceAccount(wallet.publicKey);
+    try {
+      const balance = await connection.getTokenAccountBalance(appAccount, "confirmed");
+      return { account: appAccount, amountUi: Number(balance.value.amount) / MICRO };
+    } catch {
+      return { account: appAccount, amountUi: 0 };
+    }
+  };
+
+  const depositToAppBalance = async (amountUi: number) => {
+    if (!(amountUi > 0)) throw new Error("Deposit amount must be greater than zero");
+    const { config } = await getConfig();
+    const appAccount = await ensureAppBalanceAccount(config.stableMint);
+    const sourceAtaResult = await maybeCreateAtaIx(connection, config.stableMint, wallet.publicKey, wallet.publicKey);
+
+    const amountBaseUnits = Math.round(amountUi * MICRO);
+    const ixs: TransactionInstruction[] = [];
+    if (sourceAtaResult.ix) ixs.push(sourceAtaResult.ix);
+    ixs.push(
+      createTransferInstruction(
+        sourceAtaResult.ata,
+        appAccount,
+        wallet.publicKey,
+        amountBaseUnits,
+        [],
+        TOKEN_PROGRAM_ID,
+      ),
+    );
+
+    const tx = new Transaction().add(...ixs);
+    return provider.sendAndConfirm(tx, [], { commitment: "confirmed" });
+  };
+
+  const withdrawFromAppBalance = async (amountUi: number) => {
+    if (!(amountUi > 0)) throw new Error("Withdraw amount must be greater than zero");
+    const { config } = await getConfig();
+    const appAccount = await ensureAppBalanceAccount(config.stableMint);
+    const destinationAtaResult = await maybeCreateAtaIx(connection, config.stableMint, wallet.publicKey, wallet.publicKey);
+    const amountBaseUnits = Math.round(amountUi * MICRO);
+
+    const ixs: TransactionInstruction[] = [];
+    if (destinationAtaResult.ix) ixs.push(destinationAtaResult.ix);
+    ixs.push(
+      createTransferInstruction(
+        appAccount,
+        destinationAtaResult.ata,
+        wallet.publicKey,
+        amountBaseUnits,
+        [],
+        TOKEN_PROGRAM_ID,
+      ),
+    );
+
+    const tx = new Transaction().add(...ixs);
+    return provider.sendAndConfirm(tx, [], { commitment: "confirmed" });
+  };
+
   const fetchInvoices = async (): Promise<OnchainInvoice[]> => {
     const rows = (await (program.account as Record<string, { all: () => Promise<unknown> }>).invoice.all()) as Array<{
       publicKey: PublicKey;
       account: InvoiceAccount;
     }>;
-    return rows
-      .map((row) => {
+    const mapped = await Promise.all(
+      rows.map(async (row) => {
         const account = row.account;
+        const status = statusToLabel(account.status);
+        const [vaultPk] = deriveInvoiceVault(row.publicKey);
+        let vaultBalanceUi = 0;
+
+        try {
+          const vaultBalance = await connection.getTokenAccountBalance(vaultPk, "confirmed");
+          vaultBalanceUi = Number(vaultBalance.value.amount) / MICRO;
+        } catch {
+          vaultBalanceUi = 0;
+        }
+
         return {
           pubkey: row.publicKey.toBase58(),
           invoiceId: bytesToHexPreview(account.invoiceIdHash),
@@ -205,13 +316,17 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
           repaymentAmountUi: toUiAmount(account.repaymentAmount),
           dueDate: new Date(Number(account.dueTs.toString()) * 1000).toISOString().slice(0, 10),
           risk: riskFromScore(account.riskScore),
-          status: statusToLabel(account.status),
+          status,
+          vaultState: deriveVaultState(status, vaultBalanceUi),
+          vaultBalanceUi,
           documentHash: bytesToHexPreview(account.documentHash),
           metadataHash: bytesToHexPreview(account.metadataHash),
           createdTs: Number(account.createdTs.toString()),
         };
-      })
-      .sort((a, b) => b.createdTs - a.createdTs);
+      }),
+    );
+
+    return mapped.sort((a, b) => b.createdTs - a.createdTs);
   };
 
   const createInvoice = async (input: OnchainCreateInput) => {
@@ -296,6 +411,27 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
       .rpc();
   };
 
+  const fundInvoiceFromAppBalance = async (invoicePubkey: PublicKey, exporterPubkey: PublicKey) => {
+    const { configPda, config } = await getConfig();
+    const appAccount = await ensureAppBalanceAccount(config.stableMint);
+    const exporterAtaResult = await maybeCreateAtaIx(connection, config.stableMint, exporterPubkey, wallet.publicKey);
+
+    return program.methods
+      .fundInvoice()
+      .accounts({
+        config: configPda,
+        investor: wallet.publicKey,
+        invoice: invoicePubkey,
+        investorTokenAccount: appAccount,
+        exporterTokenAccount: exporterAtaResult.ata,
+        treasuryTokenAccount: config.treasury,
+        stableMint: config.stableMint,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .preInstructions(exporterAtaResult.ix ? [exporterAtaResult.ix] : [])
+      .rpc();
+  };
+
   const repayInvoice = async (invoicePubkey: PublicKey) => {
     const { configPda, config } = await getConfig();
     const [invoiceVault] = deriveInvoiceVault(invoicePubkey);
@@ -314,6 +450,25 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
         tokenProgram: TOKEN_PROGRAM_ID,
       })
       .preInstructions(payerAtaResult.ix ? [payerAtaResult.ix] : [])
+      .rpc();
+  };
+
+  const repayInvoiceFromAppBalance = async (invoicePubkey: PublicKey) => {
+    const { configPda, config } = await getConfig();
+    const [invoiceVault] = deriveInvoiceVault(invoicePubkey);
+    const appAccount = await ensureAppBalanceAccount(config.stableMint);
+
+    return program.methods
+      .repayInvoice()
+      .accounts({
+        config: configPda,
+        payer: wallet.publicKey,
+        invoice: invoicePubkey,
+        invoiceVault,
+        payerTokenAccount: appAccount,
+        stableMint: config.stableMint,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
       .rpc();
   };
 
@@ -348,12 +503,18 @@ export function createVadeClient(connection: Connection, wallet: AnchorWallet) {
   return {
     programId: VADE_PROGRAM_ID,
     getConfig,
+    getAppBalance,
+    depositToAppBalance,
+    withdrawFromAppBalance,
+    ensureAppBalanceAccount,
     fetchInvoices,
     createInvoice,
     verifyInvoice,
     listInvoice,
     fundInvoice,
+    fundInvoiceFromAppBalance,
     repayInvoice,
+    repayInvoiceFromAppBalance,
     claimRepayment,
     markDefault,
   };

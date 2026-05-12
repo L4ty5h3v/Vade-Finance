@@ -16,6 +16,7 @@ type Props = {
   canCreate: boolean;
   onOpenCreate: () => void;
   onOpenDetail: (invoiceId: string) => void;
+  onRepayInvoice: (invoiceId: string) => void;
 };
 
 export function PortfolioView({
@@ -26,8 +27,40 @@ export function PortfolioView({
   canCreate,
   onOpenCreate,
   onOpenDetail,
+  onRepayInvoice,
 }: Props) {
   const reducedMotion = useReducedMotion();
+
+  if (role === "Verifier") {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[#143260]">Verifier workspace</h2>
+          <p className="text-sm text-[#5d7598]">Review listed invoices in Marketplace and run lifecycle actions in Verification.</p>
+        </div>
+
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {[
+            ["Invoices in deal flow", `${marketInvoices.length}`],
+            ["Awaiting verification", `${marketInvoices.filter((item) => item.status === "Submitted").length}`],
+            ["Ready to list", `${marketInvoices.filter((item) => item.status === "Verified").length}`],
+            ["Funded positions", `${marketInvoices.filter((item) => item.status === "Funded").length}`],
+          ].map(([label, value], idx) => (
+            <motion.article
+              key={label}
+              initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+              animate={reducedMotion ? {} : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: idx * 0.04 }}
+              className="rounded-2xl border border-[#c7daf4] bg-white/85 p-4"
+            >
+              <p className="text-xs uppercase tracking-[0.13em] text-[#5f7ba2]">{label}</p>
+              <p className="mt-2 text-xl font-semibold text-[#123462]">{value}</p>
+            </motion.article>
+          ))}
+        </section>
+      </div>
+    );
+  }
 
   if (role === "Exporter") {
     const totals = myInvoices.reduce(
@@ -41,7 +74,6 @@ export function PortfolioView({
     );
 
     const awaiting = Math.max(myInvoices.length - totals.funded, 0);
-
     return (
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
@@ -108,13 +140,24 @@ export function PortfolioView({
                     <td className="px-4 py-3">{row.dueDate}</td>
                     <td className="px-4 py-3"><StatusBadge status={row.funding} /></td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        className="rounded-lg border border-[#c4d7f3] bg-white px-3 py-1.5 text-xs font-semibold text-[#284d84]"
-                        onClick={() => onOpenDetail(row.invoiceId)}
-                      >
-                        View details
-                      </button>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          className="rounded-lg border border-[#c4d7f3] bg-white px-3 py-1.5 text-xs font-semibold text-[#284d84]"
+                          onClick={() => onOpenDetail(row.invoiceId)}
+                        >
+                          View details
+                        </button>
+                        {marketInvoices.find((item) => item.id === row.invoiceId)?.status === "Funded" ? (
+                          <button
+                            type="button"
+                            className="rounded-lg border border-cyan-300 bg-cyan-100 px-3 py-1.5 text-xs font-semibold text-cyan-800"
+                            onClick={() => onRepayInvoice(row.invoiceId)}
+                          >
+                            Repay
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -136,7 +179,6 @@ export function PortfolioView({
     },
     { invested: 0, repayment: 0, profit: 0, pending: 0 },
   );
-
   return (
     <div className="space-y-5">
       <div>

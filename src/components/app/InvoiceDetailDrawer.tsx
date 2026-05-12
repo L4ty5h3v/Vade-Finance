@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { InvoiceRecord, invoiceTimeline } from "@/lib/app-data";
 import { RiskBadge } from "./RiskBadge";
 import { StatusBadge } from "./StatusBadge";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   invoice?: InvoiceRecord;
@@ -14,8 +15,56 @@ type Props = {
 
 const formatUSDT = (amount: number) => `${amount.toLocaleString("en-US")} USDT`;
 
+const statusToTimelineIndex: Partial<Record<InvoiceRecord["status"], number>> = {
+  Submitted: 0,
+  Verified: 2,
+  Listed: 3,
+  Funded: 4,
+  Repaid: 5,
+  Claimed: 6,
+  Rejected: 1,
+  Defaulted: 4,
+  Pending: 0,
+};
+
 export function InvoiceDetailDrawer({ invoice, open, onClose }: Props) {
   const reducedMotion = useReducedMotion();
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const onChainRows = useMemo(
+    () =>
+      invoice
+        ? [
+            { key: "invoice_pda", label: "invoice_pda", value: invoice.pubkey || "inv_8Kx...92a" },
+            { key: "vault_state", label: "vault_state", value: invoice.vaultState || "initialized" },
+            { key: "document_hash", label: "document_hash", value: invoice.documentHash },
+            { key: "metadata_hash", label: "metadata_hash", value: invoice.metadataHash },
+            { key: "tx_signature", label: "tx_signature", value: invoice.txSignature },
+            { key: "network", label: "network", value: "Solana Devnet" },
+          ]
+        : [],
+    [invoice],
+  );
+
+  const currentTimelineStep = invoice ? (statusToTimelineIndex[invoice.status] ?? 0) : 0;
+  const isNegativeTerminal = invoice?.status === "Rejected" || invoice?.status === "Defaulted";
+  const showInvestor =
+    !!invoice?.investor && !!invoice?.investorWallet && (invoice.status === "Funded" || invoice.status === "Repaid" || invoice.status === "Claimed" || invoice.status === "Defaulted");
+
+  useEffect(() => {
+    if (!copiedKey) return;
+    const timer = window.setTimeout(() => setCopiedKey(null), 1400);
+    return () => window.clearTimeout(timer);
+  }, [copiedKey]);
+
+  const handleCopy = async (key: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedKey(key);
+    } catch {
+      setCopiedKey(null);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -48,6 +97,7 @@ export function InvoiceDetailDrawer({ invoice, open, onClose }: Props) {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <Panel title="Exporter" value={invoice.exporter} />
+              {showInvestor ? <Panel title="Investor" value={invoice.investor!} /> : null}
               <Panel title="Debtor" value={invoice.debtor} />
               <Panel title="Face value" value={formatUSDT(invoice.faceValue)} />
               <Panel title="Purchase price" value={formatUSDT(invoice.purchasePrice)} />
@@ -66,31 +116,75 @@ export function InvoiceDetailDrawer({ invoice, open, onClose }: Props) {
             <section className="mt-6 rounded-2xl border border-[#c7daf4] bg-white/85 p-4">
               <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#45658f]">On-chain data</h3>
               <ul className="mt-3 space-y-2 font-mono text-xs text-[#24446f]">
-                <li className="rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2">invoice_pda: inv_8Kx...92a</li>
-                <li className="rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2">vault_state: initialized</li>
-                <li className="rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2">document_hash: {invoice.documentHash}</li>
-                <li className="rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2">metadata_hash: {invoice.metadataHash}</li>
-                <li className="rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2">tx_signature: {invoice.txSignature}</li>
-                <li className="rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2">network: Solana Devnet</li>
+                {onChainRows.map((row) => {
+                  const isCopied = copiedKey === row.key;
+                  return (
+                    <li key={row.key}>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(row.key, row.value)}
+                        className="group flex w-full items-center justify-between gap-3 rounded-lg border border-[#d2e2f7] bg-[#f4f9ff] px-3 py-2 text-left transition-colors hover:border-[#a7c8f6] hover:bg-[#ecf5ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7bb6ff]"
+                      >
+                        <span className="break-all pr-2">
+                          {row.label}: {row.value}
+                        </span>
+                        <AnimatePresence mode="wait" initial={false}>
+                          {isCopied ? (
+                            <motion.span
+                              key="copied"
+                              initial={reducedMotion ? false : { opacity: 0, y: 2 }}
+                              animate={reducedMotion ? {} : { opacity: 1, y: 0 }}
+                              exit={reducedMotion ? {} : { opacity: 0, y: -2 }}
+                              className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.1em] text-emerald-600"
+                            >
+                              Copied
+                            </motion.span>
+                          ) : null}
+                        </AnimatePresence>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             </section>
 
             <section className="mt-6 rounded-2xl border border-[#c7daf4] bg-white/85 p-4">
               <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[#45658f]">Activity timeline</h3>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-3">
                 {invoiceTimeline.map((entry, idx) => (
                   <motion.li
                     key={entry}
                     initial={reducedMotion ? false : { opacity: 0, x: -6 }}
                     animate={reducedMotion ? {} : { opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: idx * 0.04 }}
-                    className="flex items-center gap-2 text-sm text-[#24446f]"
+                    className="relative flex gap-3 pb-4 last:pb-0"
                   >
-                    <span className="h-2 w-2 rounded-full bg-[#2b66d8]" />
-                    {entry}
+                    <span
+                      aria-hidden
+                      className={`absolute left-[6px] top-4 h-[calc(100%-6px)] w-[2px] rounded-full ${
+                        idx < invoiceTimeline.length - 1
+                          ? idx < currentTimelineStep
+                            ? "bg-emerald-400"
+                            : "bg-[#c6d9f3]"
+                          : "bg-transparent"
+                      }`}
+                    />
+                    <span
+                      className={`relative z-[1] mt-[2px] inline-block h-3.5 w-3.5 shrink-0 rounded-full border ${
+                        idx <= currentTimelineStep ? "border-emerald-500 bg-emerald-400" : "border-[#7ea8e0] bg-[#dbe9fb]"
+                      }`}
+                    />
+                    <div className="min-w-0">
+                      <p className={`text-sm ${idx <= currentTimelineStep ? "text-[#1f6b4f]" : "text-[#24446f]"}`}>{entry}</p>
+                    </div>
                   </motion.li>
                 ))}
               </ul>
+              {isNegativeTerminal ? (
+                <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                  Lifecycle ended with status: {invoice?.status}
+                </p>
+              ) : null}
             </section>
           </motion.aside>
         </motion.div>

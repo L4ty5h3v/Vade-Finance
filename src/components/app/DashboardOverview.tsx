@@ -16,6 +16,7 @@ const metricToneMap: Record<string, string> = {
 const roleNotes: Record<UserRole, string> = {
   Exporter: "Focus: create and list invoices with faster liquidity access.",
   Investor: "Focus: evaluate verified deals and monitor repayment events.",
+  Verifier: "Focus: validate documents and move invoices through lifecycle states.",
 };
 
 export function DashboardOverview({ role }: { role: UserRole }) {

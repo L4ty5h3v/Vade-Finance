@@ -2,32 +2,18 @@
 
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { useConnection } from "@solana/wallet-adapter-react";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
 import { ChevronDown, LogOut, RefreshCcw, Wallet } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function shortAddress(address: string) {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
 export function WalletConnectControl() {
-  const { connection } = useConnection();
   const { publicKey, connected, connecting, disconnect, wallet } = useWallet();
   const { setVisible } = useWalletModal();
   const [open, setOpen] = useState(false);
-  const [usdtBalance, setUsdtBalance] = useState<string>("0.00");
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const stableMint = useMemo(() => {
-    const value = process.env.NEXT_PUBLIC_VADE_STABLE_MINT;
-    if (!value) return null;
-    try {
-      return new PublicKey(value);
-    } catch {
-      return null;
-    }
-  }, []);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -51,42 +37,9 @@ export function WalletConnectControl() {
     };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const syncBalance = async () => {
-      if (!publicKey || !stableMint) {
-        if (!cancelled) setUsdtBalance("0.00");
-        return;
-      }
-
-      try {
-        const ata = getAssociatedTokenAddressSync(stableMint, publicKey);
-        const balance = await connection.getTokenAccountBalance(ata);
-        if (!cancelled) {
-          const amount = Number(balance.value.amount) / 1_000_000;
-          setUsdtBalance(amount.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }));
-        }
-      } catch {
-        if (!cancelled) setUsdtBalance("0.00");
-      }
-    };
-
-    void syncBalance();
-    const timer = setInterval(() => void syncBalance(), 8000);
-
-    return () => {
-      cancelled = true;
-      if (timer) clearInterval(timer);
-    };
-  }, [connection, publicKey, stableMint]);
-
   if (!connected) {
     return (
       <div className="flex items-center gap-2">
-        <span className="rounded-xl border border-[#c4d7f3] bg-white px-3 py-2 text-xs font-semibold text-[#3f5f88]">
-          USDT: {usdtBalance}
-        </span>
         <button
           type="button"
           onClick={() => setVisible(true)}
@@ -104,9 +57,6 @@ export function WalletConnectControl() {
 
   return (
     <div className="relative flex items-center gap-2" ref={rootRef}>
-      <span className="rounded-xl border border-[#c4d7f3] bg-white px-3 py-2 text-xs font-semibold text-[#3f5f88]">
-        USDT: {usdtBalance}
-      </span>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
